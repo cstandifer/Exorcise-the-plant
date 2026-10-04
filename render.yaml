@@ -1,0 +1,5 @@
+services:
+  - type: web
+    name: exorcise-the-plant
+    runtime: static
+    staticPublishPath: ./

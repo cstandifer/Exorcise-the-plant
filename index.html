@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Exorcise the Plant</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Changa:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+    :root {
+      color-scheme: light dark;
+      --ink: #17201b;
+      --muted: #53625a;
+      --paper: #edf2e8;
+      --surface: #f9fbf5;
+      --surface-2: #dfe8d7;
+      --line: #bdcbb9;
+      --moss: #3d6b46;
+      --moss-2: #24462e;
+      --acid: #d9f04f;
+      --acid-ink: #263000;
+      --ember: #c7412f;
+      --gold: #e09e2f;
+      --shadow: rgba(30, 50, 38, .18);
+      --canvas-frame: #283e30;
+      --danger-bg: #f1dad5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #eef6ea;
+        --muted: #aebdaf;
+        --paper: #111914;
+        --surface: #1b261e;
+        --surface-2: #26342a;
+        --line: #405344;
+        --moss: #76a67b;
+        --moss-2: #a8cbaa;
+        --acid: #dff75a;
+        --acid-ink: #202900;
+        --ember: #ef765e;
+        --gold: #f2b94b;
+        --shadow: rgba(0, 0, 0, .42);
+        --canvas-frame: #415747;
+        --danger-bg: #43221e;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { min-width: 320px; background: var(--paper); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(circle at 15% 0%, color-mix(in srgb, var(--acid) 12%, transparent) 0, transparent 34%),
+        var(--paper);
+      color: var(--ink);
+      overflow-x: hidden;
+    }
+    button { font: inherit; }
+
+    .page {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 44px) clamp(14px, 3vw, 32px) calc(28px + env(safe-area-inset-bottom));
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: end;
+      margin: 0 2px 22px;
+    }
+    .intro h1 {
+      font-family: "Changa", sans-serif;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      line-height: .94;
+      letter-spacing: -.035em;
+      margin: 0;
+      max-width: 760px;
+    }
+    .intro h1 span { color: var(--moss); }
+    .intro p {
+      margin: 12px 0 0;
+      max-width: 650px;
+      font-size: clamp(.98rem, 2vw, 1.1rem);
+      line-height: 1.55;
+      color: var(--muted);
+    }
+    .case-file {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      padding: 12px 15px;
+      min-width: 160px;
+      box-shadow: 4px 4px 0 var(--shadow);
+      transform: rotate(1.5deg);
+    }
+    .case-file strong {
+      display: block;
+      font-family: "Changa", sans-serif;
+      font-size: .8rem;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .case-file span {
+      display: block;
+      margin-top: 2px;
+      font-size: .83rem;
+      color: var(--ember);
+      font-weight: 700;
+    }
+
+    .game-shell {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 55px var(--shadow), 7px 7px 0 color-mix(in srgb, var(--moss) 32%, transparent);
+      overflow: hidden;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: 1.15fr .7fr .7fr;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 18px 13px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 94%, var(--acid));
+    }
+    .hud-label {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: .75rem;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .hud-label output { color: var(--ink); letter-spacing: 0; }
+    .meter {
+      height: 13px;
+      border: 1px solid var(--ink);
+      background: var(--surface-2);
+      padding: 2px;
+      overflow: hidden;
+    }
+    .meter > span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--ember);
+      transform-origin: left;
+      transition: width .16s linear;
+    }
+    .hud-stat { min-width: 0; }
+    .lives, .seals {
+      height: 19px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .life {
+      width: 15px;
+      height: 15px;
+      border-radius: 50% 50% 45% 45%;
+      border: 2px solid var(--moss-2);
+      background: var(--acid);
+      transform: rotate(45deg);
+    }
+    .life.lost { background: transparent; opacity: .32; }
+    .seal {
+      width: 17px;
+      height: 17px;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      position: relative;
+      opacity: .35;
+    }
+    .seal::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      background: var(--gold);
+      transform: rotate(45deg);
+    }
+    .seal.filled { opacity: 1; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--gold) 65%, transparent)); }
+
+    .arena-wrap {
+      position: relative;
+      background: #101a14;
+      aspect-ratio: 9 / 5;
+      width: 100%;
+      min-height: 280px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      image-rendering: auto;
+    }
+
+    .modal {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(10, 16, 12, .68);
+      backdrop-filter: blur(4px);
+      transition: opacity .18s ease;
+      z-index: 3;
+    }
+    .modal[hidden] { display: none; }
+    .modal-card {
+      width: min(520px, 100%);
+      background: #eef2e8;
+      color: #18201b;
+      border: 2px solid #101611;
+      box-shadow: 9px 9px 0 rgba(0,0,0,.34);
+      padding: clamp(18px, 4vw, 28px);
+      text-align: center;
+    }
+    .modal-card .stamp {
+      display: inline-block;
+      border: 2px solid #a73327;
+      color: #a73327;
+      padding: 3px 8px 2px;
+      margin-bottom: 10px;
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+    }
+    .modal-card h2 {
+      font-family: "Changa", sans-serif;
+      font-size: clamp(1.65rem, 5vw, 2.65rem);
+      line-height: 1;
+      margin: 0;
+    }
+    .modal-card p { margin: 9px auto 15px; max-width: 410px; line-height: 1.45; color: #475148; }
+    .howto {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin: 16px 0 18px;
+      text-align: left;
+    }
+    .howto div { border-top: 2px solid #7d8d7f; padding-top: 7px; font-size: .78rem; color: #3f4941; }
+    .howto b { display: block; color: #18201b; margin-bottom: 2px; }
+    .primary {
+      border: 2px solid #1b261d;
+      background: #dff354;
+      color: #202800;
+      padding: 11px 20px 9px;
+      min-width: 180px;
+      font-family: "Changa", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 #1b261d;
+      transition: transform .1s ease, box-shadow .1s ease;
+    }
+    .primary:hover { transform: translate(1px, 1px); box-shadow: 3px 3px 0 #1b261d; }
+    .primary:active { transform: translate(4px, 4px); box-shadow: none; }
+    .primary:focus-visible, .control:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+    .callout {
+      position: absolute;
+      left: 50%;
+      top: 11%;
+      transform: translateX(-50%);
+      padding: 7px 12px;
+      background: rgba(20, 29, 22, .88);
+      color: #f6f8ef;
+      border: 1px solid rgba(255,255,255,.22);
+      font: 700 .78rem/1.2 "DM Sans", sans-serif;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .18s ease;
+      z-index: 2;
+      white-space: nowrap;
+      max-width: calc(100% - 28px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .callout.show { opacity: 1; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: stretch;
+      padding: 14px 18px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+    }
+    .control-group { display: flex; gap: 8px; }
+    .move-pad {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(48px, 64px));
+      grid-template-rows: repeat(2, 42px);
+      gap: 6px;
+    }
+    .control-group:last-child { justify-content: flex-end; align-items: center; }
+    .control {
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--ink);
+      min-height: 48px;
+      min-width: 54px;
+      padding: 8px 15px;
+      font-weight: 800;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      box-shadow: 0 3px 0 color-mix(in srgb, var(--line) 75%, var(--ink));
+    }
+    .control:active, .control.pressed { transform: translateY(3px); box-shadow: none; }
+    .control.cast { background: var(--moss); color: #fff; border-color: var(--moss-2); min-width: 110px; }
+    .control.ritual { background: var(--danger-bg); color: var(--ember); border-color: var(--ember); min-width: 132px; }
+    .control.ritual.ready { background: var(--acid); color: var(--acid-ink); border-color: var(--ink); animation: ready-pulse .72s steps(2) infinite; }
+    .keyboard-hint {
+      align-self: center;
+      font-size: .75rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.35;
+    }
+    kbd {
+      font-family: inherit;
+      font-size: .68rem;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      padding: 1px 4px;
+      box-shadow: 0 1px 0 var(--line);
+    }
+
+    .field-notes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin: 27px 4px 0;
+    }
+    .field-notes h2 {
+      font-family: "Changa", sans-serif;
+      font-size: 1.15rem;
+      margin: 0 0 6px;
+    }
+    .field-notes p, .field-notes li { color: var(--muted); line-height: 1.5; font-size: .9rem; }
+    .field-notes p { margin: 0; }
+    .field-notes ul { margin: 0; padding: 0; list-style: none; }
+    .field-notes li { display: flex; gap: 8px; margin: 5px 0; }
+    .field-notes li::before { content: "•"; color: var(--ember); font-weight: 900; }
+
+    @keyframes ready-pulse { 50% { filter: brightness(1.13); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+    @media (max-width: 720px) {
+      .page { padding-top: 22px; }
+      .intro { grid-template-columns: 1fr; gap: 12px; }
+      .case-file { display: none; }
+      .hud { grid-template-columns: 1fr 1fr; gap: 11px 14px; padding: 11px 12px; }
+      .hud-stat:first-child { grid-column: 1 / -1; }
+      .arena-wrap { aspect-ratio: 1.36 / 1; min-height: 330px; }
+      .controls { grid-template-columns: 1fr 1fr; padding: 11px 12px 14px; }
+      .keyboard-hint { display: none; }
+      .control-group { justify-content: stretch; }
+      .move-pad { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 44px); }
+      .control-group:last-child { justify-content: stretch; flex-direction: column; }
+      .control { flex: 1; min-width: 0; padding-inline: 10px; }
+      .move-pad .control { min-height: 0; }
+      .control.cast, .control.ritual { min-width: 0; }
+      .field-notes { grid-template-columns: 1fr; gap: 16px; }
+    }
+    @media (max-width: 430px) {
+      .intro h1 { font-size: 2.25rem; }
+      .intro p { font-size: .92rem; }
+      .howto { grid-template-columns: 1fr; }
+      .howto div { display: grid; grid-template-columns: 80px 1fr; gap: 7px; }
+      .modal-card p { font-size: .88rem; }
+      .arena-wrap { aspect-ratio: 1.05 / 1; min-height: 360px; }
+      .controls { gap: 8px; }
+      .control { font-size: .83rem; min-height: 44px; }
+      .move-pad { grid-template-rows: repeat(2, 42px); }
+      .field-notes { margin-top: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="intro" aria-labelledby="mission-title">
+      <div>
+        <h1 id="mission-title">The snake plant has <span>breached containment.</span></h1>
+        <p>Suit up as Muse. Roam the whole office, dodge cursed thorns, fire frost bolts, and collect three warding seals to drive the middle-management demon out of the plant.</p>
+      </div>
+      <aside class="case-file" aria-label="Case status">
+        <strong>Case 09-F</strong>
+        <span>Possession confirmed</span>
+      </aside>
+    </section>
+
+    <section class="game-shell" aria-label="Exorcise the Plant game">
+      <div class="hud" aria-live="polite">
+        <div class="hud-stat">
+          <div class="hud-label"><span>Plant possession</span><output id="hpText">100%</output></div>
+          <div class="meter" aria-hidden="true"><span id="hpBar"></span></div>
+        </div>
+        <div class="hud-stat">
+          <div class="hud-label"><span>Muse resolve</span></div>
+          <div class="lives" id="lives" aria-label="5 resolve remaining"></div>
+        </div>
+        <div class="hud-stat">
+          <div class="hud-label"><span>Warding seals</span><output id="sealText">0 / 3</output></div>
+          <div class="seals" id="seals" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <div class="arena-wrap" id="arenaWrap">
+        <canvas id="game" width="900" height="500" aria-label="Game arena: Muse fights a possessed office plant"></canvas>
+        <div class="callout" id="callout" aria-live="assertive"></div>
+        <div class="modal" id="modal">
+          <div class="modal-card">
+            <span class="stamp" id="modalStamp">Emergency assignment</span>
+            <h2 id="modalTitle">Break the curse.</h2>
+            <p id="modalBody">The snake plant feeds on bureaucracy. Move freely around the office, dodge its thorns, and keep firing. Catch three golden seals to unleash a full exorcism.</p>
+            <div class="howto" id="howto">
+              <div><b>Move</b><span>Arrows, WASD, pad, or drag</span></div>
+              <div><b>Fire</b><span>Space or Frost bolt</span></div>
+              <div><b>Exorcise</b><span>X when seals glow</span></div>
+            </div>
+            <button class="primary" id="startBtn" type="button">Begin ritual</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Game controls">
+        <div class="control-group move-pad" aria-label="Movement pad">
+          <button class="control" id="leftBtn" type="button" aria-label="Move Muse left">← Left</button>
+          <button class="control" id="upBtn" type="button" aria-label="Move Muse up">↑ Up</button>
+          <button class="control" id="downBtn" type="button" aria-label="Move Muse down">↓ Down</button>
+          <button class="control" id="rightBtn" type="button" aria-label="Move Muse right">→ Right</button>
+        </div>
+        <div class="keyboard-hint"><kbd>WASD</kbd> / <kbd>Arrows</kbd> move · drag the arena · <kbd>Space</kbd> fire · <kbd>X</kbd> exorcise</div>
+        <div class="control-group">
+          <button class="control cast" id="castBtn" type="button">Frost bolt</button>
+          <button class="control ritual" id="ritualBtn" type="button" aria-disabled="true">Exorcise 0/3</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="field-notes" aria-label="Field notes">
+      <div>
+        <h2>Know the haunting</h2>
+        <p>The plant throws red thorns and frantic memos. Both damage your resolve. Golden seals drift slower—collect them instead of shooting them.</p>
+      </div>
+      <div>
+        <h2>Muse field doctrine</h2>
+        <ul>
+          <li>Frost bolts chip away at the possession.</li>
+          <li>Three seals power a 24-point exorcism burst.</li>
+          <li>The angrier the snake plant gets, the faster it fires.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var canvas = document.getElementById('game');
+      var ctx = canvas.getContext('2d');
+      var hpBar = document.getElementById('hpBar');
+      var hpText = document.getElementById('hpText');
+      var livesEl = document.getElementById('lives');
+      var sealsEl = document.getElementById('seals');
+      var sealText = document.getElementById('sealText');
+      var ritualBtn = document.getElementById('ritualBtn');
+      var modal = document.getElementById('modal');
+      var modalStamp = document.getElementById('modalStamp');
+      var modalTitle = document.getElementById('modalTitle');
+      var modalBody = document.getElementById('modalBody');
+      var howto = document.getElementById('howto');
+      var startBtn = document.getElementById('startBtn');
+      var callout = document.getElementById('callout');
+      var W = 900, H = 500;
+      var state = 'intro';
+      var player, boss, projectiles, hazards, pickups, particles, floaters;
+      var last = 0, spawnTimer = 0, sealTimer = 0, shotTimer = 0, elapsed = 0;
+      var calloutTimer = 0, shake = 0, audioCtx = null, pointerActive = false;
+      var keys = { up: false, down: false, left: false, right: false, fire: false };
+      var nextWords = [
+        'PER MY LAST EMAIL', 'SYNERGY SURGE', 'CIRCLE BACK',
+        'QUICK TOUCH BASE', 'Q4 NEVER ENDS', 'MANDATORY FUN'
+      ];
+
+      function resetGame() {
+        player = { x: 135, y: 255, lastX: 135, lastY: 255, lives: 5, seals: 0, inv: 0, cooldown: 0, run: 0, runPhase: 0, facing: 1 };
+        boss = { x: 760, y: 255, hp: 100, flash: 0, phase: 0 };
+        projectiles = [];
+        hazards = [];
+        pickups = [];
+        particles = [];
+        floaters = [];
+        spawnTimer = 1.1;
+        sealTimer = 4.7;
+        shotTimer = 0;
+        elapsed = 0;
+        shake = 0;
+        updateHud();
+      }
+
+      function initIcons() {
+        livesEl.innerHTML = '';
+        sealsEl.innerHTML = '';
+        for (var i = 0; i < 5; i++) {
+          var life = document.createElement('span');
+          life.className = 'life';
+          livesEl.appendChild(life);
+        }
+        for (var j = 0; j < 3; j++) {
+          var seal = document.createElement('span');
+          seal.className = 'seal';
+          sealsEl.appendChild(seal);
+        }
+      }
+
+      function updateHud() {
+        var hp = Math.max(0, Math.ceil(boss ? boss.hp : 100));
+        hpBar.style.width = hp + '%';
+        hpText.textContent = hp + '%';
+        var lifeNodes = livesEl.children;
+        for (var i = 0; i < lifeNodes.length; i++) lifeNodes[i].classList.toggle('lost', i >= (player ? player.lives : 5));
+        livesEl.setAttribute('aria-label', (player ? player.lives : 5) + ' resolve remaining');
+        var sealNodes = sealsEl.children;
+        for (var j = 0; j < sealNodes.length; j++) sealNodes[j].classList.toggle('filled', j < (player ? player.seals : 0));
+        sealText.textContent = (player ? player.seals : 0) + ' / 3';
+        ritualBtn.textContent = player && player.seals >= 3 ? 'Exorcise now' : 'Exorcise ' + (player ? player.seals : 0) + '/3';
+        ritualBtn.classList.toggle('ready', !!player && player.seals >= 3 && state === 'playing');
+        ritualBtn.setAttribute('aria-disabled', (!player || player.seals < 3 || state !== 'playing') ? 'true' : 'false');
+      }
+
+      function resizeCanvas() {
+        var rect = canvas.getBoundingClientRect();
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
+      }
+
+      function startGame() {
+        ensureAudio();
+        resetGame();
+        state = 'playing';
+        modal.hidden = true;
+        last = performance.now();
+        tone(170, .09, 'sawtooth', .05);
+        setTimeout(function(){ tone(255, .12, 'triangle', .04); }, 90);
+        requestAnimationFrame(loop);
+      }
+
+      function endGame(won) {
+        state = won ? 'won' : 'lost';
+        updateHud();
+        if (won) {
+          modalStamp.textContent = 'Entity evicted';
+          modalTitle.textContent = 'The snake plant is free.';
+          modalBody.textContent = 'Muse has cleared the last trace of quarterly-review evil. The plant would like some water and several weeks of paid leave.';
+          startBtn.textContent = 'Exorcise it again';
+          fanfare();
+        } else {
+          modalStamp.textContent = 'Ritual interrupted';
+          modalTitle.textContent = 'The demon scheduled a follow-up.';
+          modalBody.textContent = 'Your resolve ran out, but the plant is still rattled. Re-enter the cubicle and finish the exorcism.';
+          startBtn.textContent = 'Return to the office';
+          tone(110, .35, 'sawtooth', .05);
+        }
+        howto.hidden = true;
+        setTimeout(function () { modal.hidden = false; }, 520);
+      }
+
+      function nudge(key) {
+        if (state !== 'playing') return;
+        var amount = 18;
+        if (key === 'left') { player.x = Math.max(58, player.x - amount); player.facing = -1; }
+        if (key === 'right') { player.x = Math.min(650, player.x + amount); player.facing = 1; }
+        if (key === 'up') player.y = Math.max(78, player.y - amount);
+        if (key === 'down') player.y = Math.min(440, player.y + amount);
+        player.run = 1;
+        tone(245 + player.y * .16, .025, 'square', .012);
+      }
+
+      function moveToPointer(e) {
+        if (state !== 'playing') return;
+        var rect = canvas.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width * W;
+        var y = (e.clientY - rect.top) / rect.height * H;
+        if (Math.abs(x - player.x) > 2) player.facing = x < player.x ? -1 : 1;
+        player.x = Math.max(58, Math.min(650, x));
+        player.y = Math.max(78, Math.min(440, y));
+        player.run = 1;
+      }
+
+      function fire() {
+        if (state !== 'playing' || player.cooldown > 0) return;
+        player.cooldown = .34;
+        projectiles.push({ x: player.x + 43, y: player.y - 2, vx: 620, r: 8 });
+        burst(player.x + 40, player.y, '#bfefff', 4, 90);
+        tone(420, .045, 'sine', .025);
+      }
+
+      function exorcise() {
+        if (state !== 'playing' || player.seals < 3) {
+          if (state === 'playing') showCallout('Three seals are required.');
+          return;
+        }
+        player.seals = 0;
+        boss.hp = Math.max(0, boss.hp - 24);
+        boss.flash = .6;
+        shake = .5;
+        burst(boss.x, boss.y, '#f8e16c', 46, 300);
+        floaters.push({ x: boss.x - 10, y: boss.y - 60, text: 'EXORCISED −24', life: 1.2, color: '#fff080' });
+        showCallout('BEGONE, SPIRIT OF MANDATORY SYNERGY!');
+        chord([180, 255, 360]);
+        updateHud();
+        if (boss.hp <= 0) endGame(true);
+      }
+
+      function showCallout(text) {
+        callout.textContent = text;
+        callout.classList.add('show');
+        calloutTimer = 1.45;
+      }
+
+      function spawnHazard() {
+        var memo = Math.random() < .25;
+        var speed = 230 + elapsed * 3.6 + Math.random() * 55;
+        var startX = boss.x - 38;
+        var startY = boss.y + (Math.random() * 54 - 27);
+        var aimX = player.x + (Math.random() * 50 - 25);
+        var aimY = player.y + (Math.random() * 50 - 25);
+        var dx = aimX - startX, dy = aimY - startY;
+        var mag = Math.sqrt(dx * dx + dy * dy) || 1;
+        hazards.push({
+          x: startX,
+          y: startY,
+          vx: dx / mag * speed,
+          vy: dy / mag * speed,
+          r: memo ? 18 : 12,
+          type: memo ? 'memo' : 'thorn',
+          spin: Math.random() * 6,
+          word: memo ? nextWords[Math.floor(Math.random() * nextWords.length)] : ''
+        });
+        if (memo && Math.random() < .65) showCallout('INCOMING: ' + hazards[hazards.length - 1].word);
+      }
+
+      function spawnSeal() {
+        pickups.push({
+          x: boss.x - 42,
+          y: 100 + Math.random() * 320,
+          vx: -(125 + Math.random() * 45),
+          vy: Math.random() * 50 - 25,
+          r: 15,
+          t: 0
+        });
+      }
+
+      function hitPlayer(h) {
+        if (player.inv > 0) return;
+        player.lives--;
+        player.inv = 1.15;
+        shake = .28;
+        burst(player.x, player.y, '#ef6b54', 18, 190);
+        floaters.push({ x: player.x - 5, y: player.y - 44, text: 'RESOLVE −1', life: 1, color: '#ff8b72' });
+        tone(95, .18, 'sawtooth', .06);
+        updateHud();
+        if (player.lives <= 0) endGame(false);
+      }
+
+      function collectSeal(p) {
+        if (player.seals < 3) player.seals++;
+        burst(p.x, p.y, '#f2cd4e', 16, 150);
+        floaters.push({ x: player.x, y: player.y - 42, text: 'SEAL ' + player.seals + '/3', life: 1, color: '#ffe277' });
+        tone(520 + player.seals * 95, .16, 'triangle', .045);
+        if (player.seals === 3) showCallout('RITUAL CHARGED — EXORCISE NOW!');
+        updateHud();
+      }
+
+      function burst(x, y, color, count, speed) {
+        for (var i = 0; i < count; i++) {
+          var a = Math.random() * Math.PI * 2;
+          var s = Math.random() * speed;
+          particles.push({ x: x, y: y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: .35 + Math.random() * .55, color: color, r: 2 + Math.random() * 3 });
+        }
+      }
+
+      function update(dt) {
+        elapsed += dt;
+        player.cooldown = Math.max(0, player.cooldown - dt);
+        player.inv = Math.max(0, player.inv - dt);
+        boss.flash = Math.max(0, boss.flash - dt);
+        shake = Math.max(0, shake - dt);
+
+        boss.x = 760 + Math.sin(elapsed * .62) * 22;
+        boss.y = 255 + Math.sin(elapsed * .91) * 112;
+
+        var mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+        var my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+        if (mx || my) {
+          var moveMag = Math.sqrt(mx * mx + my * my);
+          var moveSpeed = 285;
+          player.x = Math.max(58, Math.min(650, player.x + mx / moveMag * moveSpeed * dt));
+          player.y = Math.max(78, Math.min(440, player.y + my / moveMag * moveSpeed * dt));
+          if (mx) player.facing = mx < 0 ? -1 : 1;
+        }
+        var moved = dist(player.x, player.y, player.lastX, player.lastY);
+        player.lastX = player.x;
+        player.lastY = player.y;
+        player.run = moved > .35 ? Math.min(1, player.run + dt * 11) : Math.max(0, player.run - dt * 5);
+        player.runPhase += dt * (5 + player.run * 11);
+        if (keys.fire) fire();
+
+        spawnTimer -= dt;
+        if (spawnTimer <= 0) {
+          spawnHazard();
+          var rage = (100 - boss.hp) / 100;
+          spawnTimer = Math.max(.46, 1.15 - rage * .45 - elapsed * .006) + Math.random() * .35;
+        }
+        sealTimer -= dt;
+        if (sealTimer <= 0 && pickups.length === 0 && player.seals < 3) {
+          spawnSeal();
+          sealTimer = 5.5 + Math.random() * 2.5;
+        }
+
+        var i;
+        for (i = projectiles.length - 1; i >= 0; i--) {
+          var pr = projectiles[i];
+          pr.x += pr.vx * dt;
+          var hitBoss = pr.x > boss.x - 52 && Math.abs(pr.y - boss.y) < 142;
+          if (hitBoss) {
+            boss.hp = Math.max(0, boss.hp - 2.6);
+            boss.flash = .11;
+            burst(pr.x, pr.y, '#c7efff', 7, 100);
+            floaters.push({ x: pr.x, y: pr.y - 8, text: '−3', life: .45, color: '#d8f5ff' });
+            projectiles.splice(i, 1);
+            tone(260, .025, 'square', .012);
+            updateHud();
+            if (boss.hp <= 0) { endGame(true); return; }
+          } else if (pr.x > W + 30) projectiles.splice(i, 1);
+        }
+
+        for (i = hazards.length - 1; i >= 0; i--) {
+          var h = hazards[i];
+          h.x += h.vx * dt;
+          h.y += h.vy * dt;
+          h.spin += dt * 5;
+          if (dist(h.x, h.y, player.x, player.y) < h.r + 31) {
+            hitPlayer(h);
+            hazards.splice(i, 1);
+          } else if (h.x < -50 || h.x > W + 50 || h.y < -50 || h.y > H + 50) hazards.splice(i, 1);
+        }
+
+        for (i = pickups.length - 1; i >= 0; i--) {
+          var p = pickups[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          if (p.y < 82 || p.y > 438) p.vy *= -1;
+          p.t += dt;
+          if (dist(p.x, p.y, player.x, player.y) < 46) {
+            collectSeal(p);
+            pickups.splice(i, 1);
+          } else if (p.x < -40) {
+            pickups.splice(i, 1);
+            sealTimer = 2.2;
+          }
+        }
+
+        for (i = particles.length - 1; i >= 0; i--) {
+          var q = particles[i];
+          q.x += q.vx * dt; q.y += q.vy * dt; q.vx *= .97; q.vy *= .97; q.life -= dt;
+          if (q.life <= 0) particles.splice(i, 1);
+        }
+        for (i = floaters.length - 1; i >= 0; i--) {
+          floaters[i].y -= 28 * dt; floaters[i].life -= dt;
+          if (floaters[i].life <= 0) floaters.splice(i, 1);
+        }
+        if (calloutTimer > 0) {
+          calloutTimer -= dt;
+          if (calloutTimer <= 0) callout.classList.remove('show');
+        }
+      }
+
+      function dist(x1, y1, x2, y2) { var dx = x1 - x2, dy = y1 - y2; return Math.sqrt(dx * dx + dy * dy); }
+
+      function draw() {
+        ctx.save();
+        if (shake > 0) ctx.translate((Math.random() - .5) * 10 * shake, (Math.random() - .5) * 10 * shake);
+        drawOffice();
+        drawBoss();
+        drawPlayer();
+        drawObjects();
+        ctx.restore();
+      }
+
+      function drawOffice() {
+        var bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#101c24'); bg.addColorStop(.58, '#1a2a28'); bg.addColorStop(.59, '#26362d'); bg.addColorStop(1, '#17221c');
+        ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+        // Windows and city
+        ctx.fillStyle = '#07131c'; ctx.fillRect(42, 28, 810, 118);
+        ctx.strokeStyle = '#304751'; ctx.lineWidth = 5; ctx.strokeRect(42, 28, 810, 118);
+        ctx.beginPath(); ctx.moveTo(310, 28); ctx.lineTo(310, 146); ctx.moveTo(580, 28); ctx.lineTo(580, 146); ctx.stroke();
+        ctx.fillStyle = '#ebd77a'; ctx.beginPath(); ctx.arc(96, 71, 22, 0, Math.PI * 2); ctx.fill();
+        var buildings = [[150,93,45,53],[200,79,58,67],[271,107,31,39],[350,88,62,58],[420,101,46,45],[482,71,70,75],[620,92,46,54],[672,81,61,65],[744,103,93,43]];
+        for (var b = 0; b < buildings.length; b++) {
+          var z = buildings[b]; ctx.fillStyle = b % 2 ? '#172b36' : '#213947'; ctx.fillRect(z[0], z[1], z[2], z[3]);
+          ctx.fillStyle = '#bfad55';
+          for (var wx = z[0] + 9; wx < z[0] + z[2] - 5; wx += 15) for (var wy = z[1] + 9; wy < z[1] + z[3] - 4; wy += 15) if ((wx + wy + b) % 3 !== 0) ctx.fillRect(wx, wy, 4, 5);
+        }
+
+        // Fluorescent light
+        ctx.fillStyle = 'rgba(218,239,200,.1)'; ctx.beginPath(); ctx.moveTo(265, 0); ctx.lineTo(635, 0); ctx.lineTo(770, 430); ctx.lineTo(130, 430); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#d9e8cf'; ctx.fillRect(326, 5, 248, 10);
+        ctx.fillStyle = 'rgba(229,255,202,.35)'; ctx.fillRect(340, 15, 220, 7);
+
+        // Open office floor grid
+        ctx.strokeStyle = 'rgba(174,205,174,.12)'; ctx.lineWidth = 1;
+        for (var x = 0; x < W; x += 90) { ctx.beginPath(); ctx.moveTo(x, 500); ctx.lineTo(450 + (x - 450) * .42, 154); ctx.stroke(); }
+        for (var y = 175; y < 500; y += 55) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+        ctx.setLineDash([7, 12]); ctx.strokeStyle = 'rgba(210,240,205,.12)';
+        ctx.strokeRect(42, 72, 620, 372);
+        ctx.setLineDash([]);
+
+        // Desk/cubicle details
+        ctx.fillStyle = '#33473b'; ctx.fillRect(650, 397, 222, 12); ctx.fillRect(675, 409, 13, 80); ctx.fillRect(836, 409, 13, 80);
+        ctx.fillStyle = '#d8dfcd'; ctx.fillRect(792, 370, 47, 28); ctx.fillStyle = '#bfc9b7'; ctx.fillRect(798, 376, 35, 4); ctx.fillRect(798, 384, 29, 4);
+        ctx.fillStyle = '#7d493a'; ctx.fillRect(60, 417, 58, 39); ctx.fillStyle = '#a26045'; ctx.fillRect(65, 408, 48, 13);
+      }
+
+      function drawBoss() {
+        var x = boss.x, y = boss.y;
+        ctx.save(); ctx.translate(x, y);
+        if (boss.flash > 0) ctx.globalAlpha = .45 + Math.random() * .55;
+
+        // A low ember haze gathers around the crown without softening its silhouette.
+        var aura = ctx.createRadialGradient(0, -35, 10, 0, -35, 126);
+        aura.addColorStop(0, 'rgba(186,42,18,.28)');
+        aura.addColorStop(.52, 'rgba(91,12,7,.14)');
+        aura.addColorStop(1, 'rgba(50,0,0,0)');
+        ctx.fillStyle = aura; ctx.beginPath(); ctx.arc(0, -35, 126, 0, Math.PI * 2); ctx.fill();
+
+        // The tall, rigid blades are drawn back-to-front like a real snake plant crown.
+        drawSnakeLeaf(-22, 57, -83, -84, 25, '#315d37', 1);
+        drawSnakeLeaf(24, 57, 89, -70, 24, '#294f31', 2);
+        drawSnakeLeaf(-34, 58, -66, -116, 27, '#3c6c43', 3);
+        drawSnakeLeaf(37, 58, 68, -126, 25, '#365f3c', 4);
+        drawSnakeLeaf(-8, 58, -42, -157, 29, '#426f47', 5);
+        drawSnakeLeaf(18, 58, 34, -173, 27, '#315a39', 6);
+        drawSnakeLeaf(-40, 58, -99, -35, 25, '#2b5333', 7);
+        drawSnakeLeaf(38, 58, 104, -28, 23, '#274a2e', 8);
+        drawSnakeLeaf(0, 59, 2, -137, 32, '#47784b', 9);
+        drawSnakeLeaf(-17, 59, -15, -92, 31, '#355f3a', 10);
+        drawSnakeLeaf(20, 59, 48, -94, 28, '#3f7043', 11);
+
+        // Thin, scorched tendrils suggest the possession without changing the species.
+        ctx.strokeStyle = '#241b15'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(-37, 42); ctx.quadraticCurveTo(-68, 22, -76, -7); ctx.lineTo(-87, -18);
+        ctx.moveTo(39, 43); ctx.quadraticCurveTo(70, 20, 76, -10); ctx.lineTo(88, -20);
+        ctx.stroke();
+        ctx.strokeStyle = '#8b2d1e'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(-76,-7); ctx.lineTo(-66,-12); ctx.moveTo(76,-10); ctx.lineTo(66,-15); ctx.stroke();
+
+        // Dark soil and the thick rolled lip of a classic orange terracotta pot.
+        ctx.fillStyle = '#17110d'; ctx.beginPath(); ctx.ellipse(0, 58, 51, 12, 0, 0, Math.PI * 2); ctx.fill();
+        var rim = ctx.createLinearGradient(-58, 47, 58, 73);
+        rim.addColorStop(0, '#7b321d'); rim.addColorStop(.18, '#c35f2f'); rim.addColorStop(.52, '#dc7840'); rim.addColorStop(.82, '#a94725'); rim.addColorStop(1, '#682719');
+        ctx.fillStyle = rim; ctx.beginPath(); ctx.roundRect(-60, 48, 120, 27, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(255,180,107,.18)'; ctx.fillRect(-48, 52, 87, 4);
+        ctx.fillStyle = '#24150f'; ctx.beginPath(); ctx.ellipse(0, 54, 49, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+        var pot = ctx.createLinearGradient(-48, 72, 48, 135);
+        pot.addColorStop(0, '#c96332'); pot.addColorStop(.42, '#b55229'); pot.addColorStop(.78, '#8e3b22'); pot.addColorStop(1, '#63271a');
+        ctx.fillStyle = pot;
+        ctx.beginPath(); ctx.moveTo(-51, 70); ctx.lineTo(51, 70); ctx.lineTo(38, 130); ctx.quadraticCurveTo(1, 140, -38, 130); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(64,20,13,.48)'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = 'rgba(255,183,115,.16)';
+        ctx.beginPath(); ctx.moveTo(-38,76); ctx.lineTo(-24,126); ctx.quadraticCurveTo(-14,130,-8,130); ctx.lineTo(-16,76); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(54,20,15,.42)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(25,82); ctx.quadraticCurveTo(17,95,23,111); ctx.moveTo(-29,91); ctx.lineTo(-22,103); ctx.stroke();
+
+        // Root-claws curl over the rim, anchoring the demon inside the ordinary pot.
+        ctx.strokeStyle = '#262016'; ctx.lineCap = 'round'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(-26,52); ctx.quadraticCurveTo(-42,62,-48,78); ctx.moveTo(28,52); ctx.quadraticCurveTo(43,62,48,79); ctx.stroke();
+        ctx.strokeStyle = '#5a3e22'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(-26,52); ctx.quadraticCurveTo(-42,62,-48,78); ctx.moveTo(28,52); ctx.quadraticCurveTo(43,62,48,79); ctx.stroke();
+
+        // Ember eyes sit low between the blades, as if something is peering through the crown.
+        ctx.fillStyle = '#090705';
+        ctx.beginPath(); ctx.moveTo(-39,-9); ctx.quadraticCurveTo(-24,-24,-5,-12); ctx.quadraticCurveTo(-22,-7,-39,-9); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(39,-9); ctx.quadraticCurveTo(24,-24,5,-12); ctx.quadraticCurveTo(22,-7,39,-9); ctx.fill();
+        var eyeGlow = ctx.createRadialGradient(-22,-13,1,-22,-13,17);
+        eyeGlow.addColorStop(0,'#fff1a0'); eyeGlow.addColorStop(.2,'#ff6b2f'); eyeGlow.addColorStop(.55,'rgba(190,34,14,.46)'); eyeGlow.addColorStop(1,'rgba(120,12,7,0)');
+        ctx.fillStyle=eyeGlow; ctx.beginPath(); ctx.arc(-22,-13,17,0,Math.PI*2); ctx.fill();
+        var eyeGlow2 = ctx.createRadialGradient(22,-13,1,22,-13,17);
+        eyeGlow2.addColorStop(0,'#fff1a0'); eyeGlow2.addColorStop(.2,'#ff6b2f'); eyeGlow2.addColorStop(.55,'rgba(190,34,14,.46)'); eyeGlow2.addColorStop(1,'rgba(120,12,7,0)');
+        ctx.fillStyle=eyeGlow2; ctx.beginPath(); ctx.arc(22,-13,17,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#ff9b45'; ctx.beginPath(); ctx.ellipse(-22,-13,8,2.6,-.12,0,Math.PI*2); ctx.ellipse(22,-13,8,2.6,.12,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#160806'; ctx.beginPath(); ctx.ellipse(-22,-13,1.6,3.4,0,0,Math.PI*2); ctx.ellipse(22,-13,1.6,3.4,0,0,Math.PI*2); ctx.fill();
+
+        // A thorn-lined fissure splits the packed soil beneath the eyes.
+        ctx.fillStyle = '#080504';
+        ctx.beginPath(); ctx.moveTo(-31,17); ctx.bezierCurveTo(-17,30,16,30,33,16); ctx.bezierCurveTo(18,43,-18,43,-31,17); ctx.fill();
+        ctx.fillStyle='#c7b98d';
+        for (var t=-23; t<=19; t+=14) { ctx.beginPath(); ctx.moveTo(t,21); ctx.lineTo(t+6,34); ctx.lineTo(t+10,20); ctx.closePath(); ctx.fill(); }
+        ctx.strokeStyle='#752017'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(-29,18); ctx.quadraticCurveTo(0,29,31,17); ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawSnakeLeaf(baseX, baseY, tipX, tipY, width, color, seed) {
+        ctx.save();
+        var dx = tipX - baseX;
+        var dy = tipY - baseY;
+        var bend = ((seed % 3) - 1) * 5;
+        var path = new Path2D();
+        path.moveTo(baseX - width * .48, baseY);
+        path.bezierCurveTo(baseX - width * .66 + bend, baseY + dy * .34, tipX - width * .20, tipY + 24, tipX, tipY);
+        path.bezierCurveTo(tipX + width * .20, tipY + 24, baseX + width * .62 + bend, baseY + dy * .34, baseX + width * .48, baseY);
+        path.closePath();
+
+        var leafShade = ctx.createLinearGradient(baseX - width, baseY, baseX + width, baseY);
+        leafShade.addColorStop(0, '#122a1b');
+        leafShade.addColorStop(.18, '#244a2e');
+        leafShade.addColorStop(.52, color);
+        leafShade.addColorStop(.72, '#315c37');
+        leafShade.addColorStop(1, '#102619');
+        ctx.fillStyle = leafShade; ctx.fill(path);
+        ctx.save(); ctx.clip(path);
+
+        // Sansevieria's dark, irregular cross-banding.
+        ctx.strokeStyle = 'rgba(10,29,18,.63)'; ctx.lineCap = 'round';
+        for (var i = 1; i < 10; i++) {
+          var f = i / 11;
+          var cy = baseY + dy * f;
+          var cx = baseX + dx * f + Math.sin(seed * 2.1 + i) * 2;
+          var half = width * (.48 - f * .34);
+          ctx.lineWidth = 2.2 + (i % 3) * .7;
+          ctx.beginPath();
+          ctx.moveTo(cx - half - 3, cy - 5 + (i % 2) * 3);
+          ctx.quadraticCurveTo(cx - half * .15, cy + 4, cx + half + 3, cy - 3 + ((i + seed) % 3) * 2);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = 'rgba(151,177,111,.24)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(baseX - 2, baseY - 3); ctx.quadraticCurveTo(baseX + dx * .48 + bend, baseY + dy * .48, tipX, tipY + 4); ctx.stroke();
+        ctx.restore();
+
+        ctx.strokeStyle = 'rgba(117,143,83,.66)'; ctx.lineWidth = 1.5; ctx.stroke(path);
+        // Small bruises and splits keep the leaf texture grounded and sinister.
+        ctx.strokeStyle = 'rgba(86,25,17,.62)'; ctx.lineWidth = 1.5;
+        if (seed % 2 === 0) {
+          var sy = baseY + dy * .58, sx = baseX + dx * .58;
+          ctx.beginPath(); ctx.moveTo(sx - 5, sy - 2); ctx.lineTo(sx + 2, sy + 4); ctx.lineTo(sx + 6, sy - 1); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function drawPlayer() {
+        var x = player.x, y = player.y;
+        var run = player.run || 0;
+        var phase = player.runPhase;
+        var facing = player.facing || 1;
+        var stride = Math.sin(phase) * run;
+        var bob = Math.abs(Math.cos(phase)) * 5 * run + Math.sin(elapsed * 2.7) * (1 - run) * 1.5;
+        var lean = facing * stride * .035;
+        var armSwing = stride * 8;
+        var legSwing = stride * 7;
+        var blink = Math.sin(elapsed * .72) > .993;
+
+        ctx.save();
+        ctx.translate(x, y - bob);
+        ctx.scale(facing, 1);
+        ctx.rotate(lean);
+        if (player.inv > 0 && Math.floor(player.inv * 12) % 2 === 0) ctx.globalAlpha = .28;
+
+        // Small speed marks and soft dust keep the compact creature visibly running.
+        if (run > .08) {
+          ctx.save();
+          ctx.globalAlpha *= .22 + run * .28;
+          ctx.strokeStyle = '#e8f4ed';
+          ctx.lineCap = 'round';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(-45, -20); ctx.lineTo(-61 - Math.abs(stride) * 8, -18);
+          ctx.moveTo(-42, -4); ctx.lineTo(-55 - Math.abs(stride) * 7, -2);
+          ctx.stroke();
+          ctx.fillStyle = '#c5d2c8';
+          ctx.beginPath(); ctx.ellipse(-25, 49, 8 + run * 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+
+        // Ground shadow.
+        ctx.fillStyle = 'rgba(0,0,0,.34)';
+        ctx.beginPath(); ctx.ellipse(0, 50 + bob, 31 + run * 3, 7 - run, 0, 0, Math.PI * 2); ctx.fill();
+
+        // Rear leg and arm, animated in opposition for a clear running stride.
+        ctx.save();
+        ctx.translate(-17 - legSwing * .28, 31);
+        ctx.rotate(-legSwing * .018);
+        var rearLimb = ctx.createLinearGradient(-10, 0, 10, 28);
+        rearLimb.addColorStop(0, '#eeeae0'); rearLimb.addColorStop(1, '#cfc9bc');
+        ctx.fillStyle = rearLimb; ctx.strokeStyle = '#b8b5ad'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-10, 0, 22, 26, 10); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(-30, -12);
+        ctx.rotate((.13 + armSwing * .018));
+        ctx.fillStyle = rearLimb; ctx.strokeStyle = '#b8b5ad'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-8, -2, 18, 50, 9); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        // Rounded, snow-white fluffy body with a gently tufted outline.
+        var fur = ctx.createLinearGradient(-37, -52, 36, 48);
+        fur.addColorStop(0, '#fffefa');
+        fur.addColorStop(.5, '#f3f0e8');
+        fur.addColorStop(1, '#d7d2c7');
+        ctx.fillStyle = fur;
+        ctx.strokeStyle = '#b8b5ad';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-4, -53);
+        ctx.quadraticCurveTo(-14, -56, -20, -49);
+        ctx.quadraticCurveTo(-31, -47, -32, -37);
+        ctx.quadraticCurveTo(-42, -31, -38, -20);
+        ctx.quadraticCurveTo(-46, -10, -39, 0);
+        ctx.quadraticCurveTo(-43, 15, -34, 22);
+        ctx.quadraticCurveTo(-34, 38, -21, 42);
+        ctx.quadraticCurveTo(-11, 49, 0, 44);
+        ctx.quadraticCurveTo(12, 50, 22, 42);
+        ctx.quadraticCurveTo(35, 38, 34, 25);
+        ctx.quadraticCurveTo(44, 16, 38, 4);
+        ctx.quadraticCurveTo(45, -8, 38, -18);
+        ctx.quadraticCurveTo(42, -31, 31, -37);
+        ctx.quadraticCurveTo(27, -49, 16, -49);
+        ctx.quadraticCurveTo(8, -57, -4, -53);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
+
+        // Short soft fur strokes make the body read as plush and fluffy, not a smooth blob.
+        ctx.save();
+        ctx.globalAlpha *= .42;
+        ctx.strokeStyle = '#c9c5ba';
+        ctx.lineWidth = 1.3;
+        ctx.lineCap = 'round';
+        var furMarks = [[-27,5,-31,9],[-18,22,-22,27],[-4,31,-7,36],[12,25,15,30],[26,9,31,12],[-29,-27,-34,-29],[27,-25,32,-28],[-11,-45,-13,-49],[9,-44,12,-48]];
+        for (var fm = 0; fm < furMarks.length; fm++) {
+          var m = furMarks[fm]; ctx.beginPath(); ctx.moveTo(m[0],m[1]); ctx.quadraticCurveTo((m[0]+m[2])/2-2,(m[1]+m[3])/2,m[2],m[3]); ctx.stroke();
+        }
+        ctx.restore();
+
+        // The smooth warm-cream face inset from the reference image.
+        var face = ctx.createLinearGradient(-26, -38, 27, 2);
+        face.addColorStop(0, '#fff8e9');
+        face.addColorStop(1, '#e8ddc8');
+        ctx.fillStyle = face;
+        ctx.strokeStyle = '#d5cbb8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-28, -39, 56, 42, 17);
+        ctx.fill(); ctx.stroke();
+
+        // Dot eyes, tiny smile, and blush cheeks.
+        ctx.fillStyle = '#171514';
+        if (blink) {
+          ctx.strokeStyle = '#171514'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(-15,-20); ctx.lineTo(-10,-20); ctx.moveTo(10,-20); ctx.lineTo(15,-20); ctx.stroke();
+        } else {
+          ctx.beginPath(); ctx.arc(-13, -21, 4.1, 0, Math.PI * 2); ctx.arc(13, -21, 4.1, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,.9)';
+          ctx.beginPath(); ctx.arc(-14.2, -22.4, 1.25, 0, Math.PI * 2); ctx.arc(11.8, -22.4, 1.25, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(232,139,145,.42)';
+        ctx.beginPath(); ctx.ellipse(-20, -11, 6, 3, 0, 0, Math.PI * 2); ctx.ellipse(20, -11, 6, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#302923'; ctx.lineWidth = 2.3; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.arc(0, -13, 7, .34, Math.PI - .34); ctx.stroke();
+
+        // Front arm and foot swing opposite their rear partners.
+        ctx.save();
+        ctx.translate(30, -11);
+        ctx.rotate(-.12 - armSwing * .018);
+        ctx.fillStyle = fur; ctx.strokeStyle = '#b8b5ad'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-9, -3, 19, 50, 9); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.translate(16 + legSwing * .28, 31);
+        ctx.rotate(legSwing * .018);
+        ctx.fillStyle = fur; ctx.strokeStyle = '#b8b5ad'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(-11, 0, 23, 26, 10); ctx.fill(); ctx.stroke();
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      function drawSparkPlayerLegacy() {
+        var x = player.x, y = player.y;
+        var run = player.run || 0;
+        var phase = player.runPhase;
+        var facing = player.facing || 1;
+        var pulse = Math.sin(elapsed * 4.2) * 2;
+        var stride = Math.sin(phase) * run;
+        var bob = Math.abs(Math.cos(phase)) * 6 * run + Math.sin(elapsed * 3.2) * (1 - run) * 3;
+        var tilt = facing * stride * .08;
+        var squashX = 1 + Math.abs(stride) * .08;
+        var squashY = 1 - Math.abs(stride) * .06;
+
+        ctx.save();
+        ctx.translate(x, y - bob);
+        ctx.scale(facing, 1);
+        ctx.rotate(tilt);
+        if (player.inv > 0 && Math.floor(player.inv * 12) % 2 === 0) ctx.globalAlpha = .28;
+
+        // Muse is an animated spark of cobalt light: no body, costume, or humanoid silhouette.
+        if (run > .04) {
+          ctx.save();
+          ctx.globalAlpha *= .18 + run * .42;
+          ctx.lineCap = 'round';
+          for (var t = 0; t < 4; t++) {
+            ctx.strokeStyle = t % 2 ? '#a9efff' : '#397eea';
+            ctx.lineWidth = 7 - t;
+            ctx.beginPath();
+            ctx.moveTo(-31 - t * 8, -17 + t * 11);
+            ctx.quadraticCurveTo(-53 - t * 10, -11 + stride * 5, -72 - t * 12, -9 + t * 9);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+
+        // Contact shadow makes the floating mark feel present in the arena.
+        ctx.save();
+        ctx.scale(facing, 1);
+        ctx.fillStyle = 'rgba(0,0,0,.34)';
+        ctx.beginPath(); ctx.ellipse(0, 44 + bob, 30 + run * 5, 7 - run, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+
+        // Soft outer glow.
+        var glow = ctx.createRadialGradient(0, 0, 8, 0, 0, 49 + pulse);
+        glow.addColorStop(0, 'rgba(205,248,255,.34)');
+        glow.addColorStop(.55, 'rgba(49,127,239,.19)');
+        glow.addColorStop(1, 'rgba(24,89,219,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(0, 0, 51 + pulse, 0, Math.PI * 2); ctx.fill();
+
+        ctx.scale(squashX, squashY);
+
+        // Four fluid lobes create Muse's familiar moving spark silhouette.
+        var shell = ctx.createLinearGradient(-35, -37, 35, 38);
+        shell.addColorStop(0, '#82e8ff');
+        shell.addColorStop(.2, '#2ea6f4');
+        shell.addColorStop(.56, '#1758ce');
+        shell.addColorStop(1, '#08266f');
+        ctx.fillStyle = shell;
+        ctx.beginPath();
+        ctx.moveTo(0, -43 - pulse);
+        ctx.bezierCurveTo(9, -28, 13, -22, 26, -25);
+        ctx.bezierCurveTo(46, -29, 48, -13, 34, -3);
+        ctx.bezierCurveTo(22, 5, 23, 11, 30, 25);
+        ctx.bezierCurveTo(38, 42, 18, 48, 7, 33);
+        ctx.bezierCurveTo(0, 23, -6, 24, -15, 34);
+        ctx.bezierCurveTo(-29, 50, -48, 37, -34, 18);
+        ctx.bezierCurveTo(-25, 6, -26, 1, -39, -7);
+        ctx.bezierCurveTo(-54, -17, -43, -35, -23, -28);
+        ctx.bezierCurveTo(-11, -24, -8, -30, 0, -43 - pulse);
+        ctx.closePath();
+        ctx.fill();
+
+        // Layered blue ribbons keep the mark dimensional without turning it into a creature.
+        ctx.fillStyle = 'rgba(159,239,255,.42)';
+        ctx.beginPath();
+        ctx.moveTo(-34, -9); ctx.bezierCurveTo(-15, -18, 7, -9, 27, -25);
+        ctx.bezierCurveTo(13, -3, -8, 8, -29, 7); ctx.bezierCurveTo(-42, 5, -45, -3, -34, -9); ctx.fill();
+        ctx.fillStyle = 'rgba(4,31,111,.42)';
+        ctx.beginPath();
+        ctx.moveTo(-17, 33); ctx.bezierCurveTo(-4, 10, 13, 5, 34, -3);
+        ctx.bezierCurveTo(24, 13, 14, 25, 7, 33); ctx.bezierCurveTo(-2, 42, -12, 42, -17, 33); ctx.fill();
+
+        // White center spark—the only "face" is Muse's luminous identity mark.
+        ctx.save();
+        ctx.rotate(-elapsed * .7);
+        ctx.fillStyle = '#f4feff';
+        ctx.shadowColor = '#c8f8ff';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(0, -17); ctx.bezierCurveTo(4, -6, 7, -4, 18, 0);
+        ctx.bezierCurveTo(7, 4, 4, 7, 0, 18);
+        ctx.bezierCurveTo(-4, 7, -7, 4, -18, 0);
+        ctx.bezierCurveTo(-7, -4, -4, -7, 0, -17);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+
+        // Orbiting motes animate faster while moving, giving the non-humanoid mark clear motion.
+        ctx.restore();
+        ctx.save();
+        ctx.translate(x, y - bob);
+        if (player.inv > 0 && Math.floor(player.inv * 12) % 2 === 0) ctx.globalAlpha = .28;
+        var orbit = elapsed * (1.7 + run * 3.2);
+        for (var i = 0; i < 3; i++) {
+          var a = orbit + i * Math.PI * 2 / 3;
+          var ox = Math.cos(a) * (39 + i * 3);
+          var oy = Math.sin(a) * (18 + i * 2);
+          ctx.fillStyle = i === 1 ? '#ffffff' : '#8beaff';
+          ctx.beginPath(); ctx.arc(ox, oy, i === 1 ? 2.2 : 3.1, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      function drawObjects() {
+        var i;
+        // shots
+        for (i = 0; i < projectiles.length; i++) {
+          var p = projectiles[i];
+          ctx.fillStyle = 'rgba(167,227,255,.22)'; ctx.beginPath(); ctx.arc(p.x, p.y, 17, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = '#c7f1ff'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x-4,p.y-4); ctx.lineTo(p.x+4,p.y+4); ctx.moveTo(p.x+4,p.y-4); ctx.lineTo(p.x-4,p.y+4); ctx.stroke();
+        }
+        // hazards
+        for (i = 0; i < hazards.length; i++) {
+          var h = hazards[i]; ctx.save(); ctx.translate(h.x, h.y); ctx.rotate(h.spin);
+          if (h.type === 'memo') {
+            ctx.fillStyle = '#e7e0ca'; ctx.fillRect(-17,-20,34,40); ctx.fillStyle = '#b44937'; ctx.fillRect(-11,-12,22,5); ctx.fillStyle = '#5b625c'; ctx.fillRect(-11,-2,19,3); ctx.fillRect(-11,5,22,3); ctx.fillRect(-11,12,14,3);
+          } else {
+            ctx.fillStyle = '#dc513d';
+            ctx.beginPath();
+            for (var n = 0; n < 12; n++) { var a = n*Math.PI/6; var r = n%2 ? 7 : 17; var px=Math.cos(a)*r, py=Math.sin(a)*r; if(n===0)ctx.moveTo(px,py);else ctx.lineTo(px,py); }
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#4a1917'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
+          }
+          ctx.restore();
+        }
+        // pickups
+        for (i = 0; i < pickups.length; i++) {
+          var s = pickups[i]; ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.t*.8);
+          ctx.strokeStyle = '#ffe36c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0,0,17,0,Math.PI*2); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,220,70,.18)'; ctx.beginPath(); ctx.arc(0,0,28,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle = '#f5c944'; ctx.rotate(Math.PI/4); ctx.fillRect(-8,-8,16,16); ctx.fillStyle = '#fff6a9'; ctx.fillRect(-3,-3,6,6); ctx.restore();
+        }
+        // particles
+        for (i = 0; i < particles.length; i++) { var q=particles[i]; ctx.globalAlpha=Math.min(1,q.life*2); ctx.fillStyle=q.color; ctx.fillRect(q.x-q.r/2,q.y-q.r/2,q.r,q.r); }
+        ctx.globalAlpha=1;
+        // float text
+        ctx.textAlign='center'; ctx.font='700 16px DM Sans';
+        for (i = 0; i < floaters.length; i++) { var f=floaters[i]; ctx.globalAlpha=Math.min(1,f.life*2); ctx.fillStyle=f.color; ctx.fillText(f.text,f.x,f.y); }
+        ctx.globalAlpha=1;
+      }
+
+      function loop(now) {
+        if (state !== 'playing') { draw(); return; }
+        var dt = Math.min(.034, (now - last) / 1000 || .016);
+        last = now;
+        update(dt);
+        draw();
+        if (state === 'playing') requestAnimationFrame(loop);
+      }
+
+      function ensureAudio() {
+        if (!audioCtx) {
+          var A = window.AudioContext || window.webkitAudioContext;
+          if (A) audioCtx = new A();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      }
+      function tone(freq, duration, type, volume) {
+        if (!audioCtx) return;
+        var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+        o.type=type||'sine'; o.frequency.value=freq; g.gain.setValueAtTime(volume||.03,audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration); o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+duration);
+      }
+      function chord(notes) { for(var i=0;i<notes.length;i++) (function(n,d){setTimeout(function(){tone(n,.3,'triangle',.045);},d);})(notes[i],i*70); }
+      function fanfare() { chord([262,330,392,523]); }
+
+      function bindHold(btn, key) {
+        function down(e){ e.preventDefault(); ensureAudio(); keys[key]=true; btn.classList.add('pressed'); if(key==='fire')fire(); else nudge(key); }
+        function up(e){ if(e)e.preventDefault(); keys[key]=false; btn.classList.remove('pressed'); }
+        btn.addEventListener('pointerdown',down); btn.addEventListener('pointerup',up); btn.addEventListener('pointercancel',up); btn.addEventListener('pointerleave',up);
+      }
+
+      initIcons();
+      resetGame();
+      resizeCanvas();
+      draw();
+      window.addEventListener('resize', function(){ resizeCanvas(); draw(); });
+      startBtn.addEventListener('click', startGame);
+      bindHold(document.getElementById('leftBtn'),'left');
+      bindHold(document.getElementById('upBtn'),'up');
+      bindHold(document.getElementById('downBtn'),'down');
+      bindHold(document.getElementById('rightBtn'),'right');
+      bindHold(document.getElementById('castBtn'),'fire');
+      ritualBtn.addEventListener('click', function(){ ensureAudio(); exorcise(); });
+      window.addEventListener('keydown', function(e){
+        if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','x','X','w','W','a','A','s','S','d','D'].indexOf(e.key) >= 0) e.preventDefault();
+        if (e.key==='ArrowUp'||e.key==='w'||e.key==='W') keys.up=true;
+        if (e.key==='ArrowDown'||e.key==='s'||e.key==='S') keys.down=true;
+        if (e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.left=true;
+        if (e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.right=true;
+        if (e.key===' ') { keys.fire=true; fire(); }
+        if (e.key==='x'||e.key==='X') exorcise();
+      });
+      window.addEventListener('keyup', function(e){
+        if (e.key==='ArrowUp'||e.key==='w'||e.key==='W') keys.up=false;
+        if (e.key==='ArrowDown'||e.key==='s'||e.key==='S') keys.down=false;
+        if (e.key==='ArrowLeft'||e.key==='a'||e.key==='A') keys.left=false;
+        if (e.key==='ArrowRight'||e.key==='d'||e.key==='D') keys.right=false;
+        if (e.key===' ') keys.fire=false;
+      });
+      canvas.addEventListener('pointerdown', function(e){ pointerActive=true; canvas.setPointerCapture(e.pointerId); moveToPointer(e); });
+      canvas.addEventListener('pointermove', function(e){ if(pointerActive) moveToPointer(e); });
+      canvas.addEventListener('pointerup', function(e){ pointerActive=false; if(canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); });
+      canvas.addEventListener('pointercancel', function(){ pointerActive=false; });
+      document.addEventListener('visibilitychange', function(){
+        keys.fire=false; keys.up=false; keys.down=false; keys.left=false; keys.right=false; pointerActive=false;
+        if(document.hidden && state==='playing') last=performance.now();
+      });
+    })();
+  </script>
+</body>
+</html>
